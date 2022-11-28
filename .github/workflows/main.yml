@@ -1,0 +1,22 @@
+name: Deploy to production
+
+on:
+  push:
+    tags:
+    - 'release-**'
+
+jobs:
+
+  deploy:
+    name: Build image and publish to AWS ECR
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Login to ECR, Build, tag, and push image
+      run: |
+        aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/w2f1x5t5
+        docker build -t public.ecr.aws/w2f1x5t5/demo_ecr:flask-app-${GITHUB_REF##*/} -f Dockerfile .
+        docker push public.ecr.aws/w2f1x5t5/demo_ecr:flask-app-${GITHUB_REF##*/}
